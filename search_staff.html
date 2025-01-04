@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Search</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: #343a40;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 16px;
+            color: #ffffff;
+            display: block;
+        }
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+        #results {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar p-3">
+    <h4 class="text-center text-white">Dashboard Menu</h4>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="insert_timetable.html">Insert Timetable</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="courseid.html">Search Course ID</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="search_staff">Search by Staff Name</a>
+        </li>
+    </ul>
+</div>
+
+<div class="content">
+    <h1 class="text-center">Search by Staff Name</h1>
+    <div class="card">
+        <div class="card-body">
+            <form id="staffSearchForm">
+                <div class="form-group">
+                    <label for="staffName">Enter Staff Name:</label>
+                    <input type="text" class="form-control" id="staffName" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="card">
+        <div class="card-body">
+            <h5>Course Details:</h5>
+            <div id="courseDetails"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    // Handle form submission
+    $('#staffSearchForm').on('submit', function(event) {
+        event.preventDefault(); // Prevent form from submitting the default way
+
+        const staffName = $('#staffName').val(); // Get the staff name
+
+        $.ajax({
+            type: 'POST',
+            url: '/api/search-staff', // Endpoint to search staff
+            data: JSON.stringify({ staffName: staffName }), // Send as JSON
+            contentType: 'application/json', // Specify JSON content
+            success: function(response) {
+                if (response && response.length > 0) {
+                    let details = `<ul class="list-group">`;
+                    response.forEach(course => {
+                        details += `<li class="list-group-item">
+                            <strong>Subject Code:</strong> ${course.subject_code}<br>
+                            <strong>Subject Name:</strong> ${course.subject_name}<br>
+                            <strong>Staff In-Charge:</strong> ${course.staff_incharge}<br>
+                            <strong>Room No:</strong> ${course.room_no}<br>
+                            <strong>Semester/Year:</strong> ${course.semester_year}
+                        </li>`;
+                    });
+                    details += `</ul>`;
+                    $('#courseDetails').html(details);
+                    $('#results').show(); // Show results on successful response
+                } else {
+                    $('#courseDetails').html('<p class="text-danger">No courses found for this staff!</p>');
+                    $('#results').show();
+                }
+            },
+            error: function() {
+                $('#courseDetails').html('<p class="text-danger">An error occurred. Please try again later.</p>');
+                $('#results').show();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
